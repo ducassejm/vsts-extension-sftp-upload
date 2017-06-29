@@ -3,12 +3,6 @@ import * as ttm from "vsts-task-lib/mock-test";
 import path = require("path");
 import os = require("os");
 
-function setResponseFile(name: string) {
-    process.env['MOCK_RESPONSES'] = path.join(__dirname, name);
-}
-
-
-
 describe("sftpupload Test Suite", function () {
     this.timeout(20000);
 
