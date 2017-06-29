@@ -1,0 +1,36 @@
+{
+    "manifestVersion": 1,
+    "id": "sftpupload",
+    "name": "SFTP Upload",
+    "version": "0.3.18",
+    "publisher": "jean-marc-ducasse",
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "description": "Use SFTP to transfer files to a remote server.",
+    "categories": [
+        "Build and release"
+    ],
+    "icons": {
+        "default": "images/sftp-extension-icon.png"
+    },
+    "files": [
+        {
+            "path": "sftp"
+        }
+    ],
+    "contributions": [
+        {
+            "id": "sftp-upload",
+            "type": "ms.vss-distributed-task.task",
+            "targets": [
+                "ms.vss-distributed-task.tasks"
+            ],
+            "properties": {
+                "name": "sftp"
+            }
+        }
+    ]
+}
