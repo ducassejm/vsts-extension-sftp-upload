@@ -1,10 +1,11 @@
 import Q = require('q');
 import tl = require('vsts-task-lib/task');
+import pt = require('path');
 var Ssh2Client = require('ssh2').Client;
 var Scp2Client = require('scp2').Client;
 
 export class RemoteCommandOptions {
-    public failOnStdErr : boolean;
+    public failOnStdErr: boolean;
 }
 
 export class SshHelper {
@@ -12,7 +13,7 @@ export class SshHelper {
     private sshClient: any;
     private scpClient: any;
     private sftpClient: any;
-    
+
     /**
      * Constructor that takes a configuration object of format
      * {
@@ -28,29 +29,29 @@ export class SshHelper {
         this.sshConfig = sshConfig;
     }
 
-    private setupSshClientConnection() : Q.Promise<void> {
+    private setupSshClientConnection(): Q.Promise<void> {
         var defer = Q.defer<void>();
         this.sshClient = new Ssh2Client();
         this.sshClient.on('ready', () => {
-            defer.resolve(null);
+            this.sshClient.sftp((err, sftp) => {
+                if (err) {
+                    defer.reject(tl.loc('ConnectionFailed', err));
+                } else {
+                    this.sftpClient = sftp;
+                    defer.resolve(null);
+                }
+            })
         }).on('error', (err) => {
             defer.reject(tl.loc('ConnectionFailed', err));
         }).connect(this.sshConfig);
         return defer.promise;
     }
 
-    private setupScpConnection() : Q.Promise<void> {
+    private setupScpConnection(): Q.Promise<void> {
         var defer = Q.defer<void>();
         this.scpClient = new Scp2Client();
         this.scpClient.defaults(this.sshConfig);
-        this.scpClient.sftp((err, sftp) => {
-            if(err) {
-                defer.reject(tl.loc('ConnectionFailed', err));
-            } else {
-                this.sftpClient = sftp;
-                defer.resolve(null);
-            }
-        })
+        defer.resolve(null);
         return defer.promise;
     }
 
@@ -62,7 +63,7 @@ export class SshHelper {
         try {
             await this.setupSshClientConnection();
             await this.setupScpConnection();
-        } catch(err) {
+        } catch (err) {
             throw tl.loc('ConnectionFailed', err);
         }
     }
@@ -76,7 +77,7 @@ export class SshHelper {
                 this.sshClient.end();
                 this.sshClient = null;
             }
-        } catch(err) {
+        } catch (err) {
             tl.debug('Failed to close SSH client.');
         }
 
@@ -85,18 +86,18 @@ export class SshHelper {
                 this.scpClient.close();
                 this.scpClient = null;
             }
-        } catch(err) {
+        } catch (err) {
             tl.debug('Failed to close SCP client.');
         }
-        
+
         try {
             if (this.sftpClient) {
                 this.sftpClient.close();
                 this.sftpClient = null;
             }
-        } catch(err) {
+        } catch (err) {
             this.sftpClient = null;
-        }        
+        }
     }
 
     /**
@@ -105,14 +106,14 @@ export class SshHelper {
      * @param dest, folders will be created if they do not exist on remote server
      * @returns {Promise<string>}
      */
-    uploadFile(sourceFile: string, dest: string) : Q.Promise<string> {
+    uploadFile(sourceFile: string, dest: string): Q.Promise<string> {
         tl.debug('Upload ' + sourceFile + ' to ' + dest + ' on remote machine.');
         var defer = Q.defer<string>();
-        if(!this.scpClient) {
+        if (!this.scpClient) {
             defer.reject(tl.loc('ConnectionNotSetup'));
         }
         this.scpClient.upload(sourceFile, dest, (err) => {
-            if(err) {
+            if (err) {
                 defer.reject(tl.loc('UploadFileFailed', sourceFile, dest, err));
             } else {
                 defer.resolve(dest);
@@ -126,14 +127,14 @@ export class SshHelper {
      * @param path
      * @returns {Promise<boolean>}
      */
-    checkRemotePathExists(path: string) : Q.Promise<boolean> {
+    checkRemotePathExists(path: string): Q.Promise<boolean> {
         var defer = Q.defer<boolean>();
 
-        if(!this.sftpClient) {
+        if (!this.sftpClient) {
             defer.reject(tl.loc('ConnectionNotSetup'));
         }
-        this.sftpClient.stat(path, function(err, attr) {
-            if(err) {
+        this.sftpClient.stat(path, function (err, attr) {
+            if (err) {
                 //path does not exist
                 defer.resolve(false);
             } else {
@@ -145,47 +146,51 @@ export class SshHelper {
         return defer.promise;
     }
 
+    cleanFolder(path: string) {
+
+    }
+
     /**
      * Runs specified command on remote machine, returns error for non-zero exit code
      * @param command
      * @param options
      * @returns {Promise<string>}
      */
-    runCommandOnRemoteMachine(command: string, options: RemoteCommandOptions) : Q.Promise<string> {
+    runCommandOnRemoteMachine(command: string, options: RemoteCommandOptions): Q.Promise<string> {
         var defer = Q.defer<string>();
-        var stdErrWritten:boolean = false;
+        var stdErrWritten: boolean = false;
 
-        if(!this.sshClient) {
+        if (!this.sshClient) {
             defer.reject(tl.loc('ConnectionNotSetup'));
         }
 
-        if(!options) {
+        if (!options) {
             tl.debug('Options not passed to runCommandOnRemoteMachine, setting defaults.');
             var options = new RemoteCommandOptions();
             options.failOnStdErr = true;
         }
 
         var cmdToRun = command;
-        if(cmdToRun.indexOf(';') > 0) {
+        if (cmdToRun.indexOf(';') > 0) {
             //multiple commands were passed separated by ;
             cmdToRun = cmdToRun.replace(/;/g, '\n');
         }
         tl.debug('cmdToRun = ' + cmdToRun);
 
         this.sshClient.exec(cmdToRun, (err, stream) => {
-            if(err) {
+            if (err) {
                 defer.reject(tl.loc('RemoteCmdExecutionErr', cmdToRun, err))
             }
             stream.on('close', (code, signal) => {
                 tl.debug('code = ' + code + ', signal = ' + signal);
-                if(code && code != 0) {
+                if (code && code != 0) {
                     //non zero exit code - fail
                     defer.reject(tl.loc('RemoteCmdNonZeroExitCode', cmdToRun, code));
                 } else {
                     //no exit code or exit code of 0
 
                     //based on the options decide whether to fail the build or not if data was written to STDERR
-                    if(stdErrWritten === true && options.failOnStdErr === true) {
+                    if (stdErrWritten === true && options.failOnStdErr === true) {
                         //stderr written - fail the build
                         defer.reject(tl.loc('RemoteCmdExecutionErr', cmdToRun, tl.loc('CheckLogForStdErr')));
                     } else {
@@ -196,13 +201,179 @@ export class SshHelper {
             }).on('data', (data) => {
                 console.log(data);
             }).stderr.on('data', (data) => {
-                    stdErrWritten = true;
-                    tl.debug('stderr = ' + data);
-                    if(data && data.toString().trim() !== '') {
-                        tl.error(data);
-                    }
-                });
+                stdErrWritten = true;
+                tl.debug('stderr = ' + data);
+                if (data && data.toString().trim() !== '') {
+                    tl.error(data);
+                }
+            });
         });
         return defer.promise;
     }
+
+
+
+    rmdir(path: string): Q.Promise<void> {
+        var defer = Q.defer<void>();
+
+        if (!this.sftpClient) {
+            defer.reject(tl.loc('ConnectionNotSetup'));
+        }
+        this.sftpClient.rmdir(path, function (err) {
+            if (err) {
+                defer.reject(err);
+            } else {
+                defer.resolve(null);
+            }
+        })
+
+        return defer.promise;
+    }
+
+    unlink(path: string): Q.Promise<void> {
+        var defer = Q.defer<void>();
+
+        if (!this.sftpClient) {
+            defer.reject(tl.loc('ConnectionNotSetup'));
+        }
+        this.sftpClient.unlink(path, function (err) {
+            if (err) {
+                defer.reject(err);
+            } else {
+                defer.resolve(null);
+            }
+        })
+
+        return defer.promise;
+    }
+
+
+    readir(path: string): Q.Promise<any> {
+        var defer = Q.defer<any>();
+
+        if (!this.sftpClient) {
+            defer.reject(tl.loc('ConnectionNotSetup'));
+        }
+        this.sftpClient.readdir(path, function (err, files) {
+            if (err) {
+                defer.reject(err);
+            } else {
+                defer.resolve(files);
+            }
+        })
+
+        return defer.promise;
+    }
+
+    isDirectory(p: string): Q.Promise<boolean> {
+        var defer = Q.defer<boolean>();
+
+        if (!this.sftpClient) {
+            defer.reject(tl.loc('ConnectionNotSetup'));
+        }
+        this.sftpClient.lstat(p, function (err, attr) {
+            if (err) {
+                defer.resolve(false);
+            } else {
+                if (attr.isDirectory()) {
+                    defer.resolve(true);
+                } else {
+                    defer.resolve(false);
+                }
+            }
+        })
+
+        return defer.promise;
+    }
+
+    async removeDirectory(startDir: string) {
+
+        let directories: string[] = [startDir];
+        let nonEmptyDirectories: string[] = [];
+
+        while (directories.length > 0) {
+            let directory = directories.pop();
+
+            let fileEntries = [];
+
+            try {
+                fileEntries = await this.readir(directory);
+            } catch (reason) {
+                console.error(`${reason}: ${directory}`);
+            }
+
+            if (fileEntries.length > 0) {
+                nonEmptyDirectories.unshift(directory);
+            } else {
+                try {
+                    await this.rmdir(directory);
+                    console.log(directory);
+                } catch (reason) {
+                    console.error(`${reason}: ${directory}`)
+                }
+            }
+
+            for (let fileEntry of fileEntries) {
+                let filePath = pt.posix.join(directory, fileEntry.filename);
+                let isDir: boolean = await this.isDirectory(filePath);
+                if (isDir) {
+                    directories.push(filePath);
+                } else {
+                    try {
+                        await this.unlink(filePath);
+                        console.log(filePath);
+                    } catch (reason) {
+                        console.log(`${reason}: ${filePath}`)
+                    }
+
+                }
+            }
+        }
+
+        for (let dir of nonEmptyDirectories) {
+            try {
+                await this.rmdir(dir);
+                console.log(dir);
+            } catch (reason) {
+                console.error(`${reason}: ${dir}`)
+            }
+        }
+    }
+
+    async cleanDirectory(directory: string) {
+
+        let isDir = await this.isDirectory(directory);
+        if (!isDir) {
+            throw new Error(`The path [${directory}] is not a directory`);
+        }
+
+        let fileEntries = [];
+
+        try {
+            fileEntries = await this.readir(directory);
+        } catch (reason) {
+            console.error(`${reason}: ${directory}`);
+        }
+
+        for (let fileEntry of fileEntries) {
+            let filePath = pt.posix.join(directory, fileEntry.filename);
+            let isDir: boolean = await this.isDirectory(filePath);
+            if (isDir) {
+                try {
+                    await this.removeDirectory(filePath);
+                } catch (reason) {
+                    console.log(`${reason}: ${filePath}`)
+                }
+            } else {
+                try {
+                    await this.unlink(filePath);
+                    console.log(filePath);
+                } catch (reason) {
+                    console.log(`${reason}: ${filePath}`)
+                }
+            }
+        }
+    }
+
+
 }

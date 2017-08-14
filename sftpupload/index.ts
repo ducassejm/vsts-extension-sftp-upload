@@ -145,7 +145,7 @@ async function run(){
             writeLine(tl.loc('CleanTargetFolder', targetFolder));
             var cleanTargetFolderCmd = 'rm -rf "' + targetFolder + '"/*';
             try {
-                await sshHelper.runCommandOnRemoteMachine(cleanTargetFolderCmd, null);
+                await sshHelper.cleanDirectory(targetFolder);
             } catch (err) {
                 throw tl.loc('CleanTargetFolderFailed', err);
             }
