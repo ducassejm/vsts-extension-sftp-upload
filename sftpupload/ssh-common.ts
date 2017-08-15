@@ -1,6 +1,9 @@
 import Q = require('q');
 import tl = require('vsts-task-lib/task');
 import pt = require('path');
+import ssh2Streams = require('ssh2-streams');
+
+var sftpStatusCode = ssh2Streams.SFTPStream.STATUS_CODE;
 var Ssh2Client = require('ssh2').Client;
 var Scp2Client = require('scp2').Client;
 
@@ -298,8 +301,9 @@ export class SshHelper {
 
             try {
                 fileEntries = await this.readir(directory);
+                tl.debug(`readir ${directory}`);
             } catch (reason) {
-                console.error(`${reason}: ${directory}`);
+                tl.debug(`${reason}: ${directory}`);
             }
 
             if (fileEntries.length > 0) {
@@ -307,9 +311,9 @@ export class SshHelper {
             } else {
                 try {
                     await this.rmdir(directory);
-                    console.log(directory);
+                    tl.debug(`rmdir ${directory}`);
                 } catch (reason) {
-                    console.error(`${reason}: ${directory}`)
+                    tl.debug(`${reason}: ${directory}`)
                 }
             }
 
@@ -321,9 +325,9 @@ export class SshHelper {
                 } else {
                     try {
                         await this.unlink(filePath);
-                        console.log(filePath);
+                        tl.debug(`unlink ${filePath}`);
                     } catch (reason) {
-                        console.log(`${reason}: ${filePath}`)
+                        tl.debug(`${reason}: ${filePath}`)
                     }
 
                 }
@@ -333,9 +337,13 @@ export class SshHelper {
         for (let dir of nonEmptyDirectories) {
             try {
                 await this.rmdir(dir);
-                console.log(dir);
+                tl.debug(`rmdir ${dir}`);
             } catch (reason) {
-                console.error(`${reason}: ${dir}`)
+
+                if(reason && reason.code == sftpStatusCode.FAILURE ){
+                    reason.message = "Directory not empty"
+                }
+                tl.debug(`${reason}: ${dir}`)
             }
         }
     }
@@ -351,8 +359,9 @@ export class SshHelper {
 
         try {
             fileEntries = await this.readir(directory);
+            tl.debug(`readir ${directory}`);
         } catch (reason) {
-            console.error(`${reason}: ${directory}`);
+            tl.debug(`${reason}: ${directory}`);
         }
 
         for (let fileEntry of fileEntries) {
@@ -362,12 +371,12 @@ export class SshHelper {
                 try {
                     await this.removeDirectory(filePath);
                 } catch (reason) {
-                    console.log(`${reason}: ${filePath}`)
+                     tl.debug(`${reason}: ${filePath}`)
                 }
             } else {
                 try {
                     await this.unlink(filePath);
-                    console.log(filePath);
+                    tl.debug(`unlink ${filePath}`);
                 } catch (reason) {
                     console.log(`${reason}: ${filePath}`)
                 }
