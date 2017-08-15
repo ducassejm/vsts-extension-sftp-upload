@@ -3,7 +3,7 @@ import path = require('path');
 import Q = require('q');
 import tl = require('vsts-task-lib/task');
 import ssh2 = require("ssh2");
-import sshCommon = require('./ssh-common');
+import sftp = require('./sftp-helper')
 
 
 
@@ -56,7 +56,7 @@ function getFilesToCopy(defaultRoot:string, patterns:string[] | string):string[]
 }
 
 async function run(){
-    var sshHelper:sshCommon.SshHelper;
+    var sshHelper:sftp.SftpHelper;
     try{
 
        tl.setResourcePath(path.join(__dirname, 'task.json'));
@@ -138,12 +138,11 @@ async function run(){
         }
 
         //initialize the SSH helpers, setup the connection
-        sshHelper = new sshCommon.SshHelper(sshConfig);
+        sshHelper = new sftp.SftpHelper(sshConfig);
         await sshHelper.setupConnection();
 
         if(cleanTargetFolder) {
             writeLine(tl.loc('CleanTargetFolder', targetFolder));
-            var cleanTargetFolderCmd = 'rm -rf "' + targetFolder + '"/*';
             try {
                 await sshHelper.cleanDirectory(targetFolder);
             } catch (err) {

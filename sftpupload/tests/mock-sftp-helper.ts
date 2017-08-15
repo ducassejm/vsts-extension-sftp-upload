@@ -9,7 +9,7 @@ export class RemoteCommandOptions {
     public failOnStdErr : boolean;
 }
 
-export class SshHelper {
+export class SftpHelper {
     private sshConfig: any;
     
     /**
@@ -72,16 +72,4 @@ export class SshHelper {
         return defer.promise;
     }
 
-    /**
-     * Runs specified command on remote machine, returns error for non-zero exit code
-     * @param command
-     * @param options
-     * @returns {Promise<string>}
-     */
-    runCommandOnRemoteMachine(command: string, options: RemoteCommandOptions) : Q.Promise<string> {
-        writeLine(`mock runCommandOnRemoteMachine: ${command}`)  
-        var defer = Q.defer<string>();
-        defer.resolve('0');
-        return defer.promise;
-    }
 }

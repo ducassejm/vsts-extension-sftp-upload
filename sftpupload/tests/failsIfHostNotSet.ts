@@ -12,6 +12,6 @@ tmr.setInput('contents', '**/*');
 tmr.setInput('sourceFolder', '/user/build');
 
 tmr.setAnswers(th.Helpers.getAnswersSourcePathIsDectory());
-tmr.registerMock("./ssh-common",require("./mock-ssh-common"));
+tmr.registerMock("./sftp-helper",require("./mock-sftp-helper"));
 
 tmr.run();

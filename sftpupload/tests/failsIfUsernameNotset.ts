@@ -6,7 +6,7 @@ let taskPath = path.join(__dirname, "..", "index.js");
 let tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 
 tmr.setAnswers(th.Helpers.getAnswersSourcePathIsFile());
-tmr.registerMock("./ssh-common",require("./mock-ssh-common"));
+tmr.registerMock("./sftp-helper",require("./mock-sftp-helper"));
 
 tmr.setInput("username","");
 

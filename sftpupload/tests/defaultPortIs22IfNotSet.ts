@@ -5,7 +5,7 @@ import th = require("./helpers");
 let taskPath = path.join(__dirname, "..", "index.js");
 let tmr: tmrm.TaskMockRunner = new tmrm.TaskMockRunner(taskPath);
 tmr.setAnswers(th.Helpers.getAnswersSourcePathIsDectory());
-tmr.registerMock("./ssh-common",require("./mock-ssh-common"));
+tmr.registerMock("./sftp-helper",require("./mock-sftp-helper"));
 
 tmr.setInput("username","user");
 tmr.setInput("password", "password");
