@@ -4,5 +4,6 @@ sftpupload/node_modules
 **/*.js.map
 .vscode/
 .taskkey
+*.vsix
 
 
