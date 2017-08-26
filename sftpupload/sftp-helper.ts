@@ -8,10 +8,6 @@ import ssh2 = require('ssh2');
 var sftpStatusCode = ssh2.SFTP_STATUS_CODE;
 var Scp2Client = require('scp2').Client;
 
-export class RemoteCommandOptions {
-    public failOnStdErr: boolean;
-}
-
 export class SftpHelper {
     private sshConfig: any;
     private sshClient: ssh2.Client;
@@ -100,7 +96,7 @@ export class SftpHelper {
                 this.sftpClient = null;
             }
         } catch (err) {
-             tl.debug('Failed to close SCP client.');
+            tl.debug('Failed to close SCP client.');
             this.sftpClient = null;
         }
     }
@@ -150,7 +146,7 @@ export class SftpHelper {
 
         return defer.promise;
     }
-    
+
     rmdir(path: string): Q.Promise<void> {
         var defer = Q.defer<void>();
 
@@ -224,7 +220,19 @@ export class SftpHelper {
         return defer.promise;
     }
 
-    async removeDirectory(startDir: string) {
+    async removeDirectory(startDir: string, throwOnError?: boolean) {
+
+        let hasErrors = false;
+
+        let isDir = await this.isDirectory(startDir);
+        if (!isDir) {
+            let msgNotDir = `The path [${startDir}] is not a directory`;
+            if (throwOnError) {
+                throw new Error(msgNotDir);
+            } else {
+                tl.debug(msgNotDir);
+            }
+        }
 
         let directories: string[] = [startDir];
         let nonEmptyDirectories: string[] = [];
@@ -233,12 +241,22 @@ export class SftpHelper {
             let directory = directories.pop();
 
             let fileEntries = [];
+            
+            let hasReadirPermissionDeniedError = false;
 
             try {
                 fileEntries = await this.readir(directory);
                 tl.debug(`readir ${directory}`);
-            } catch (reason) {
-                tl.debug(`${reason}: ${directory}`);
+            } catch (err) {
+                hasErrors = true;
+                this.handleSftpErrors(err, directory, throwOnError);
+                if(err && err.code == sftpStatusCode.PERMISSION_DENIED){
+                    hasReadirPermissionDeniedError = true;
+                }
+            }
+
+            if(hasReadirPermissionDeniedError){
+                continue;
             }
 
             if (fileEntries.length > 0) {
@@ -247,8 +265,9 @@ export class SftpHelper {
                 try {
                     await this.rmdir(directory);
                     tl.debug(`rmdir ${directory}`);
-                } catch (reason) {
-                    tl.debug(`${reason}: ${directory}`)
+                } catch (err) {
+                    hasErrors = true;
+                    this.handleSftpErrors(err, directory, throwOnError);
                 }
             }
 
@@ -261,8 +280,9 @@ export class SftpHelper {
                     try {
                         await this.unlink(filePath);
                         tl.debug(`unlink ${filePath}`);
-                    } catch (reason) {
-                        tl.debug(`${reason}: ${filePath}`)
+                    } catch (err) {
+                        hasErrors = true;
+                        this.handleSftpErrors(err, filePath, throwOnError);
                     }
 
                 }
@@ -273,17 +293,20 @@ export class SftpHelper {
             try {
                 await this.rmdir(dir);
                 tl.debug(`rmdir ${dir}`);
-            } catch (reason) {
+            } catch (err) {
+                this.handleSftpErrors(err, dir, throwOnError);
 
-                if(reason && reason.code == sftpStatusCode.FAILURE ){
-                    reason.message = "Directory not empty"
-                }
-                tl.debug(`${reason}: ${dir}`)
             }
+        }
+
+        if (throwOnError && hasErrors) {
+            throw new Error(tl.loc('RemoveDirError', startDir));
         }
     }
 
-    async cleanDirectory(directory: string) {
+    async cleanDirectory(directory: string, throwOnError?: boolean) {
+
+        let hasErrors = false;
 
         let isDir = await this.isDirectory(directory);
         if (!isDir) {
@@ -294,9 +317,11 @@ export class SftpHelper {
 
         try {
             fileEntries = await this.readir(directory);
+
             tl.debug(`readir ${directory}`);
-        } catch (reason) {
-            tl.debug(`${reason}: ${directory}`);
+        } catch (err) {
+            hasErrors = true;
+            this.handleSftpErrors(err, directory, throwOnError);
         }
 
         for (let fileEntry of fileEntries) {
@@ -304,20 +329,39 @@ export class SftpHelper {
             let isDir: boolean = await this.isDirectory(filePath);
             if (isDir) {
                 try {
-                    await this.removeDirectory(filePath);
-                } catch (reason) {
-                     tl.debug(`${reason}: ${filePath}`)
+                    await this.removeDirectory(filePath, throwOnError);
+                } catch (err) {
+                    hasErrors = true;
+                    // we do not call handleSftpErrors because the error would have been handled in  removeDirectory.                                
                 }
             } else {
                 try {
                     await this.unlink(filePath);
                     tl.debug(`unlink ${filePath}`);
-                } catch (reason) {
-                    console.log(`${reason}: ${filePath}`)
+                } catch (err) {
+                    hasErrors = true;
+                    this.handleSftpErrors(err, filePath, throwOnError);
                 }
             }
         }
+
+        if (throwOnError && hasErrors) {
+            throw new Error(tl.loc('CleanDirError', directory));
+        }
     }
 
+    handleSftpErrors(err: any, filePath: string, throwOnError?: boolean) {
+
+        if (err && err.code == sftpStatusCode.FAILURE) {
+            err.message = "Directory not empty"
+        }
+
+        var msg = `${err}: ${filePath}`
+        if (throwOnError) {
+            tl.error(msg);
+        } else {
+            tl.debug(msg);
+        }
+    }
 
 }
