@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sftpupload",
     "name": "SFTP Upload",
-    "version": "0.3.19",
+    "version": "0.3.30",
     "publisher": "jean-marc-ducasse",
     "targets": [
         {
@@ -29,7 +29,7 @@
                 "ms.vss-distributed-task.tasks"
             ],
             "properties": {
-                "name": "SFTP Uploadsftp"
+                "name": "sftpupload"
             }
         }
     ]
