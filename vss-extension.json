@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sftpupload",
     "name": "SFTP Upload",
-    "version": "0.3.30",
+    "version": "0.3.33",
     "publisher": "jean-marc-ducasse",
     "targets": [
         {
@@ -13,9 +13,31 @@
     "categories": [
         "Build and release"
     ],
+    "tags": [
+        "sftp",
+        "file transfer",
+        "copy file",
+        "SSH"
+    ],    
     "icons": {
-        "default": "images/sftp-extension-icon.png"
+        "default": "images/sftpupload-extension-icon.png"
     },
+    "screenshots": [
+        {
+            "path": "images/sftpupload-entry-form.png"
+        },
+        {
+            "path": "images/sftpupload-add-task.png"
+        }
+    ], 
+    "content": {
+        "details": {
+            "path": "overview.md"
+        },
+        "license": {
+            "path": "sftpupload-license.md"
+        }
+    },       
     "files": [
         {
             "path": "sftpupload"

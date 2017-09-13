@@ -26,7 +26,7 @@
             "label": "Source folder",
             "defaultValue": "",
             "required": true,
-            "helpMarkDown": "The source folder of the files to copy to the remote machine.  When empty, the root of the repository (build) or artifacts directory (release) is used, which is $(System.DefaultWorkingDirectory).  Use [variables](https://go.microsoft.com/fwlink/?LinkID=550988) if files are not in the repository. Example: $(Agent.BuildDirectory)"
+            "helpMarkDown": "The source folder of the files to copy to the remote machine.  When empty, the root of the repository (build) or artifacts directory (release) is used, which is $(System.DefaultWorkingDirectory).  Use variables if files are not in the repository. Example: $(Agent.BuildDirectory)"
         },
         {
             "name": "contents",
@@ -82,7 +82,7 @@
             "label": "Private key",
             "defaultValue": "",
             "required": false,
-            "helpMarkDown": "The password."
+            "helpMarkDown": "The private key in OpenSSH format."
         },        
         {
             "name": "cleanTargetFolder",
