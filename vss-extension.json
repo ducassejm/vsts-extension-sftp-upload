@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sftpupload",
     "name": "SFTP Upload",
-    "version": "1.0.2",
+    "version": "1.0.4",
     "publisher": "jean-marc-ducasse",
     "targets": [
         {
@@ -44,6 +44,9 @@
         }
     ],
     "links": {
+        "getstarted": {
+            "uri": "https://github.com/ducassejm/vsts-extension-sftp-upload#getting-started"
+        },        
         "support": {
             "uri": "https://github.com/ducassejm/vsts-extension-sftp-upload"
         }
