@@ -27,5 +27,19 @@ Overwrite   | Replace existing files in and beneath the target folder.
 Fail if no files found to copy | Fail if no matching files to be copied are found under the source folder.
 Flatten folders | Flatten the folder structure and copy all files into the specified target folder on the remote machine.
 
+# Getting started
+Add the SFTP task by using "Add Task--> Utility" from the Build or Release section. 
+
+![Add SFTP task](/images/sftpupload-add-task.png)
+
+# How to use
+Simply fill-in the required fields.  Refer the the Argument section for the meaning of the fields.
+
+![SFTP Form](/images/sftpupload-entry-form.png)
+
+
+
+
+
 
 
