@@ -13,13 +13,13 @@ Copy files from source folder to target folder on a remote machine using SFTP.
 # Arguments
 Argument|descrition
 --------|----------
-Source folder       | The source folder of the files to copy to the remote machine.  When empty, the root of the repository (build) or artifacts directory (release) is used, which is $(System.DefaultWorkingDirectory).  Use variables if files are not in the repository. Example: $(Agent.BuildDirectory)
-Contents    | File paths to include as part of the copy. Supports multiple lines of minimatch patterns.
-Target folder   | Target folder on the remote machine to where files will be copied. Example: /home/user/MySite, C:\\inetpub\\wwwroot\\MySite.
+Source folder       | The source folder of the files to copy to the remote machine.  When empty, the root of the repository (build) or artifacts directory (release) is used, which is $(System.DefaultWorkingDirectory).  Use [variables](https://docs.microsoft.com/en-us/vsts/build-release/concepts/definitions/build/variables?tabs=batch) if files are not in the repository. Example: $(Agent.BuildDirectory)
+Contents    | File paths to include as part of the copy. Supports multiple lines of [minimatch patterns](https://docs.microsoft.com/en-us/vsts/build-release/tasks/file-matching-patterns). Default is `**` which includes all files (including sub folders) under the source folder.<ul><li>Example: `**/*.jar \n **/.war` includes all jar and war files (including sub folders) under the source folder.</li><li>Example: `** \n !**/*.xml` includes all files (including sub folders) under the source folder but excludes xml files.</li></ul>
+Target folder   | Target folder on the remote machine to where files will be copied. Example: /home/user/MySite, C:\\inetpub\\wwwroot\\MySite. Preface with a tilde (~) to specify the user's home directory.
 Host name   | Host name or IP address of the remote machine.
 Port number | Port number on the remote machine to use for connecting.
 User name   | The user name.
-Password    |  The password. 
+Password    |  The password.  An enviroment can be used in order to secure the password. Example: `$(mypassword)`
 Private key | The private key in OpenSSH format. 
 Clean target folder | Delete all existing files and subfolders in the target folder before copying.
 Fail on clean errors    | Fail if there is an error while cleaning the target folder. Only applies when Clean target folder is true.

@@ -48,7 +48,7 @@
             "uri": "https://github.com/ducassejm/vsts-extension-sftp-upload#getting-started"
         },        
         "support": {
-            "uri": "https://github.com/ducassejm/vsts-extension-sftp-upload"
+            "uri": "https://github.com/ducassejm/vsts-extension-sftp-upload/issues"
         }
     },    
     "contributions": [
