@@ -2,13 +2,14 @@
     "manifestVersion": 1,
     "id": "sftpupload",
     "name": "SFTP Upload",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "publisher": "jean-marc-ducasse",
     "targets": [
         {
             "id": "Microsoft.VisualStudio.Services"
         }
     ],
+    "galleryFlags": [ "Public" ],
     "description": "Use SFTP to transfer files to a remote server.",
     "categories": [
         "Build and release"

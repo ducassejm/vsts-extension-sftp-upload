@@ -1,14 +1,12 @@
 # Introduction
-Copy files from source folder to target folder on a remote machine using SFTP.  
-
+ The **SFTP Upload** task uses the SFTP protocol to transfer files securely to a remote computer.
 
 # Features
 * Compatible with Team Foundation Server 2015 Update 3 and above and Visual Studio Team Service.
 * Copy files matching a set of minimatch patterns from a source folder to a target folder on the remote machine.
-* Cross platform. The SFTP Upload task can run on Windows or Unix based Agents.
+* Cross platform. The SFTP Upload task can run on Windows and Unix based Agents.
 * Clean directory function supports Chroot directories.
 * Supports password and private key authentication.
-
 
 # Arguments
 Argument|descrition
