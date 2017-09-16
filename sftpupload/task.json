@@ -7,9 +7,9 @@
     "category": "Utility",
     "author": "Jean-Marc Ducasse",
     "version": {
-        "Major": 0,
-        "Minor": 3,
-        "Patch": 20
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
     },
     "instanceNameFormat": "SFTP $(host)",
     "groups": [
@@ -74,7 +74,7 @@
             "label": "Password",
             "defaultValue": "",
             "required": false,
-            "helpMarkDown": "The password."
+            "helpMarkDown": "The password. An enviroment can be used in order to secure the password. Example: `$(mypassword)`"
         },
         {
             "name": "privatekey",

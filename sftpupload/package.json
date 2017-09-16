@@ -2,11 +2,11 @@
   "name": "sftpupload",
   "version": "1.0.0",
   "description": "Upload files using SFTP",
-  "main": "sftpupload/index.js",
+  "main": "index.js",
   "scripts": {
-    "test": "mocha sftpupload/tests/_suite.js",
-    "create": "tfx extension create --manifest-globs vss-extension.json --rev-version",
-    "build": "tsc --project sftpupload"
+    "test": "mocha tests/_suite.js",
+    "create": "cd .. && tfx extension create --manifest-globs vss-extension.json --rev-version",
+    "build": "tsc"
   },
   "keywords": [
     "SFTP",
