@@ -5,5 +5,4 @@ sftpupload/node_modules
 .vscode/
 .taskkey
 *.vsix
-
-
+npm-debug.log

@@ -180,6 +180,15 @@ async function run() {
                 tl.debug('relativePath = ' + relativePath);
                 var targetPath = path.posix.join(targetFolder, relativePath);
 
+                // In some case join uses a backslash instead of a forward slash to combine the file names,
+                // this ensures that if one foward slash is used in the file name, the files will use / for all separetor.
+                // I am using this extra check and workaround because I have not been able to reproduce the issue, but it has been reported 
+                // by some users
+                if(targetPath.indexOf("/") !== -1){
+                    targetPath = targetPath.replace(/\\/g,"/");
+                }
+                
+
                 writeLine(tl.loc('StartedFileCopy', fileToCopy, targetPath));
                 if (!overwrite) {
                     var fileExists: boolean = await sshHelper.checkRemotePathExists(targetPath);
