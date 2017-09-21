@@ -2,7 +2,7 @@
     "manifestVersion": 1,
     "id": "sftpupload",
     "name": "SFTP Upload",
-    "version": "1.0.9",
+    "version": "1.0.10",
     "publisher": "jean-marc-ducasse",
     "targets": [
         {
